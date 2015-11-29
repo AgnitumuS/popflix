@@ -18,7 +18,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.picklecode.popflix.Popflix</mainClass>
+                            <mainClass>com.picklecode.popflix.App</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

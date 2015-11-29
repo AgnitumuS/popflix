@@ -5,6 +5,7 @@
  */
 package com.picklecode.popflix.torrent;
 
+import com.picklecode.popflix.utils.PropertiesUtil;
 import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public class TorrentStreamService {
         }
 
         TorrentOptions torrentOptions = new TorrentOptions();
-        torrentOptions.setSaveLocation(new File("/tmp"));
+        torrentOptions.setSaveLocation(new File(PropertiesUtil.get().getSaveLocation()));
         torrentOptions.setRemoveFilesAfterStop(true);
 
         mTorrentStream = TorrentStream.init(torrentOptions);

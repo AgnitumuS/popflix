@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.picklecode.popflix;
+package com.picklecode.popflix.ui;
 
+import com.picklecode.popflix.utils.PropertiesUtil;
 import com.picklecode.popflix.utils.NetworkUtils;
 import com.picklecode.popflix.torrent.TorrentStreamService;
 import com.picklecode.popflix.torrent.TorrentServer;
@@ -16,22 +17,14 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.tika.Tika;
 import org.nikkii.embedhttp.HttpServer;
 import org.nikkii.embedhttp.handler.HttpRequestHandler;
@@ -53,8 +46,6 @@ import torrentstream.listeners.TorrentListener;
 public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, TorrentListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(Popflix.class);
-    private static String OS = System.getProperty("os.name").toLowerCase();
-    public static String ARCH = System.getProperty("os.arch").toLowerCase();
 
     UpnpSearchService upnpSearch;
     TorrentStreamService streamService;
@@ -155,7 +146,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Popflix");
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("../logo.png")));
         setResizable(false);
 
         deviceList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -164,6 +155,11 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
         jLabel1.setText("Devices :");
 
         jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/picklecode/popflix/options.png"))); // NOI18N
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
@@ -300,6 +296,11 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
         if (selectedDevice != null) {
             new UpnpPlayService(selectedDevice).stop();
             streamService.stop();
+            if (server != null) {
+                server.stop();
+            }
+
+            jButton1.setEnabled(false);
         }
 
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -313,34 +314,22 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    static {
-        try {
-            loadLib("libjlibtorrent");
-        } catch (UnsatisfiedLinkError e) {
-            LOG.error(e.getMessage());
-            System.exit(1);
-        }
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-
-        try {
-
-            javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Popflix.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Popflix().setVisible(true);
+                Settings dialog = new Settings(Popflix.this, true);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        //System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
             }
         });
-    }
+    }//GEN-LAST:event_jButton3ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList<String> deviceList;
@@ -369,6 +358,8 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
         LOG.info("Stream Prepared");
         torrent.startDownload();
         lastStatus = 0;
+        jProgressBar1.setIndeterminate(true);
+        jButton1.setEnabled(true);
     }
 
     @Override
@@ -380,6 +371,11 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
     @Override
     public void onStreamError(Torrent torrent, Exception e) {
         LOG.info("Stream Error", e);
+        jProgressBar1.setIndeterminate(false);
+        if (server != null) {
+            server.stop();
+        }
+        jButton1.setEnabled(false);
 
     }
 
@@ -423,13 +419,14 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
     @Override
     public void onStreamReady(Torrent torrent) {
 
+        jProgressBar1.setIndeterminate(false);
         if (selectedDevice != null) {
             try {
                 if (server != null) {
                     server.stop();
                 }
 
-                server = new TorrentServer(0);
+                server = new TorrentServer(Integer.parseInt(PropertiesUtil.get().getServerPort()));
 
                 server.addRequestHandler(new HttpRequestHandler() {
 
@@ -478,7 +475,6 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
                 });
 
                 server.start();
-                jButton1.setEnabled(true);
 
                 UpnpPlayService service = new UpnpPlayService(selectedDevice);
                 service.stop();
@@ -502,6 +498,9 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    if (jProgressBar1.isIndeterminate()) {
+                        jProgressBar1.setIndeterminate(false);
+                    }
                     jProgressBar1.setValue((int) status.progress);
                 }
             });
@@ -513,10 +512,11 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
     public void onStreamStopped() {
         LOG.info("Stream Stopped");
         jProgressBar1.setValue(0);
+        jProgressBar1.setIndeterminate(false);
         if (server != null) {
             server.stop();
-            jButton1.setEnabled(false);
         }
+        jButton1.setEnabled(false);
 
     }
 
@@ -524,104 +524,6 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
 
     public String getMime(File f) throws IOException {
         return tika.detect(f);
-    }
-
-    private static void loadLib(String name) {
-
-        try {
-
-            if (isWindows()) {
-                name = name.substring("lib".length());
-            }
-
-            String ext = getExtension();
-            name = name + ext;
-
-            LOG.info(System.getProperty("os.arch"));
-            LOG.info(System.getProperty("os.name"));
-            Path tmp = Files.createTempDirectory("popflix");
-            setLibraryPath(tmp.toString());
-            LOG.info(tmp.toString() + "/" + name);
-            File fileOut = new File(tmp.toString() + "/" + name);
-
-            LOG.info(System.getProperty("java.library.path"));
-
-            System.out.println("/lib/" + getFolder() + "/" + name);
-            InputStream in = Popflix.class.getResourceAsStream("/lib/" + getFolder() + "/" + name);
-            if (in != null) {
-
-                OutputStream out = FileUtils.openOutputStream(fileOut);
-                IOUtils.copy(in, out);
-                in.close();
-                out.close();
-
-            }
-            System.load(fileOut.getAbsolutePath());//loading goes here
-        } catch (Exception e) {
-            LOG.error(e.getMessage());
-            System.exit(-1);
-        }
-    }
-
-    public static boolean isWindows() {
-
-        return (OS.indexOf("win") >= 0);
-
-    }
-
-    public static boolean isMac() {
-
-        return (OS.indexOf("mac") >= 0);
-
-    }
-
-    public static boolean isUnix64() {
-
-        return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0) && ARCH.indexOf("64") >= 0;
-
-    }
-
-    public static boolean isUnix() {
-
-        return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0) && ARCH.indexOf("64") == -1;
-
-    }
-
-    private static String getExtension() {
-        if (isWindows()) {
-            return ".dll";
-        }
-
-        if (isUnix() || isUnix64()) {
-            return ".so";
-        }
-
-        if (isMac()) {
-            return ".dylib";
-        }
-
-        return "";
-    }
-
-    private static String getFolder() {
-        if (isUnix64()) {
-            return "x86_64";
-        }
-
-        if (isUnix() || isWindows()) {
-            return "x86";
-        }
-
-        return "";
-    }
-
-    public static void setLibraryPath(String path) throws Exception {
-        System.setProperty("java.library.path", path);
-
-        //set sys_paths to null so that java.library.path will be reevalueted next time it is needed
-        final Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
-        sysPathsField.setAccessible(true);
-        sysPathsField.set(null, null);
     }
 
 }
