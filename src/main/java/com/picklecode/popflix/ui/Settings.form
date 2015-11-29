@@ -37,7 +37,7 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jTextField1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="177" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="153" max="32767" attributes="0"/>
                           </Group>
                           <Component id="jTextField2" max="32767" attributes="0"/>
                       </Group>
@@ -98,7 +98,7 @@
     <Component class="javax.swing.JButton" name="jButton1">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/com/picklecode/popflix/select.png"/>
+          <Image iconType="3" name="/com/picklecode/popflix/ui/select.png"/>
         </Property>
       </Properties>
       <Events>

@@ -146,7 +146,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Popflix");
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("../logo.png")));
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
         setResizable(false);
 
         deviceList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -154,7 +154,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
 
         jLabel1.setText("Devices :");
 
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/picklecode/popflix/options.png"))); // NOI18N
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/picklecode/popflix/ui/options.png"))); // NOI18N
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
@@ -195,7 +195,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
 
         jLabel3.setText("Torrent :");
 
-        playBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/picklecode/popflix/cast.png"))); // NOI18N
+        playBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/picklecode/popflix/ui/cast.png"))); // NOI18N
         playBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 playBtnActionPerformed(evt);
@@ -204,14 +204,14 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
 
         jProgressBar1.setStringPainted(true);
 
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/picklecode/popflix/stop.png"))); // NOI18N
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/picklecode/popflix/ui/stop.png"))); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/picklecode/popflix/select.png"))); // NOI18N
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/picklecode/popflix/ui/select.png"))); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
