@@ -19,21 +19,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Enumeration;
 import java.util.Map;
-import java.util.logging.Level;
+import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.Tika;
@@ -66,6 +62,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
     HttpServer server;
     private UpnpDevice selectedDevice;
     private boolean mute;
+    private final JFileChooser fileChooser;
 
     /**
      * Creates new form PopFlix
@@ -73,6 +70,22 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
     public Popflix() {
         initComponents();
         setLocationRelativeTo(null);
+
+        this.fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
+        fileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.getName().toLowerCase().endsWith(".torrent");
+            }
+
+            @Override
+            public String getDescription() {
+                return "torrent files";
+            }
+        });
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 if (server != null) {
@@ -130,6 +143,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
         jScrollPane3 = new javax.swing.JScrollPane();
         deviceList = new javax.swing.JList<>();
         jLabel1 = new javax.swing.JLabel();
+        jButton3 = new javax.swing.JButton();
         jPanel9 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         torrentTxt = new javax.swing.JTextArea();
@@ -137,6 +151,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
         playBtn = new javax.swing.JButton();
         jProgressBar1 = new javax.swing.JProgressBar();
         jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Popflix");
@@ -148,6 +163,8 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
 
         jLabel1.setText("Devices :");
 
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/picklecode/popflix/options.png"))); // NOI18N
+
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
         jPanel8Layout.setHorizontalGroup(
@@ -158,14 +175,17 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
                     .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton3)))
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton3)
+                    .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
                 .addContainerGap())
@@ -195,12 +215,21 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
             }
         });
 
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/picklecode/popflix/select.png"))); // NOI18N
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
         jPanel9Layout.setHorizontalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(jButton2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(playBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton1))
@@ -222,9 +251,11 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(playBtn)
-                    .addComponent(jButton1))
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(playBtn)
+                        .addComponent(jButton1))
+                    .addComponent(jButton2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -273,6 +304,15 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            torrentTxt.setText(selectedFile.toURI().toString());
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
     static {
         try {
             loadLib("libjlibtorrent");
@@ -305,6 +345,8 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList<String> deviceList;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel2;
@@ -478,7 +520,6 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
 
     }
 
-    
     private final Tika tika = new Tika();
 
     public String getMime(File f) throws IOException {
@@ -492,7 +533,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
             if (isWindows()) {
                 name = name.substring("lib".length());
             }
-            
+
             String ext = getExtension();
             name = name + ext;
 
