@@ -5,6 +5,7 @@
  */
 package com.picklecode.popflix.upnp;
 
+import com.picklecode.popflix.utils.NetworkUtils;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.HttpURLConnection;
@@ -58,7 +59,7 @@ public class UpnpSearchService extends Thread {
         int TIMEOUT = 5000;
 
         // Send from localhost:1901
-        InetSocketAddress srcAddress = new InetSocketAddress(SSDP_SEARCH_PORT);
+        InetSocketAddress srcAddress = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress(), SSDP_SEARCH_PORT);
         // Send to 239.255.255.250:1900
         InetSocketAddress dstAddress = new InetSocketAddress(InetAddress.getByName(SSDP_IP), SSDP_PORT);
 
@@ -110,7 +111,6 @@ public class UpnpSearchService extends Thread {
                 receivePacket = new DatagramPacket(new byte[1536], 1536);
                 wildSocket.receive(receivePacket);
                 String message = new String(receivePacket.getData());
-                LOG.info("Device Found: " + message);
                 String[] data = message.split("\r\n");
 
                 for (String line : data) {
@@ -161,7 +161,7 @@ public class UpnpSearchService extends Thread {
         }
         String name = d.getElementsByTagName("friendlyName").item(0).getFirstChild().getTextContent();
         con.getInputStream().close();
-
+        LOG.info("Device Found: " + name);
         if (!devices.containsKey(name)) {
             devices.put(name, new UpnpDevice(url, name, avTranportUrl, connectionManagerUrl, renderingControlUrl));
 
