@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.picklecode.popflix.utils;
 
 import java.io.FileInputStream;
@@ -31,9 +27,8 @@ public class PropertiesUtil {
         try {
 
             InputStream is = new FileInputStream(POPFLIX_PROPERTIES);
-            if (is != null) {
-                prop.load(is);
-            }
+            prop.load(is);
+
         } catch (FileNotFoundException e) {
             LOG.warn(e.getMessage());
         } catch (IOException e) {
