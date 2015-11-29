@@ -335,7 +335,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
 
     @Override
     public void onStreamError(Torrent torrent, Exception e) {
-        LOG.info("Stream Error",e);
+        LOG.info("Stream Error", e);
 
     }
 
@@ -530,6 +530,11 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
     private static void loadLib(String name) {
 
         try {
+
+            if (isWindows()) {
+                name = name.substring("lib".length());
+            }
+            
             String ext = getExtension();
             name = name + ext;
 
@@ -542,6 +547,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
 
             LOG.info(System.getProperty("java.library.path"));
 
+            System.out.println("/lib/" + getFolder() + "/" + name);
             InputStream in = Popflix.class.getResourceAsStream("/lib/" + getFolder() + "/" + name);
             if (in != null) {
 
@@ -558,15 +564,9 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
         }
     }
 
-    public static boolean isWindows64() {
-
-        return (OS.indexOf("win") >= 0 && ARCH.indexOf("64") >= 0);
-
-    }
-
     public static boolean isWindows() {
 
-        return (OS.indexOf("win") >= 0 && ARCH.indexOf("64") == -1);
+        return (OS.indexOf("win") >= 0);
 
     }
 
@@ -589,7 +589,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
     }
 
     private static String getExtension() {
-        if (isWindows() || isWindows64()) {
+        if (isWindows()) {
             return ".dll";
         }
 
@@ -605,7 +605,7 @@ public class Popflix extends javax.swing.JFrame implements UpnpSearchListener, T
     }
 
     private static String getFolder() {
-        if (isUnix64() || isWindows64()) {
+        if (isUnix64()) {
             return "x86_64";
         }
 
